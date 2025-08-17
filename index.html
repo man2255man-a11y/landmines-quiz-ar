@@ -1,0 +1,394 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>صفحة فاعلية: ملخص الكتاب + أسئلة تفاعلية</title>
+  <style>
+    :root{--bg:#0f172a;--panel:#111827;--muted:#cbd5e1;--text:#e5e7eb;--accent:#22c55e;--danger:#ef4444;--warn:#f59e0b;--link:#38bdf8}
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#0b1022,#0e142a 35%,#0a1226);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Noto Sans Arabic","Helvetica Neue",Arial,"Apple Color Emoji","Segoe UI Emoji";}
+    a{color:var(--link);text-decoration:none}
+    a:hover{text-decoration:underline}
+    header{position:sticky;top:0;background:rgba(15,23,42,.82);backdrop-filter:blur(10px);border-bottom:1px solid #1f2937;z-index:50}
+    .wrap{max-width:1100px;margin:0 auto;padding:16px}
+    .title{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .badge{background:#1f2937;color:#93c5fd;padding:4px 10px;border-radius:999px;font-size:12px;border:1px solid #334155}
+    .grid{display:grid;gap:16px;grid-template-columns:1fr}
+    @media(min-width:900px){.grid{grid-template-columns:1.2fr .8fr}}
+    .card{background:#0b1221;border:1px solid #1e293b;border-radius:14px;padding:16px}
+    .card h2{margin:0 0 10px 0;font-size:20px}
+    .card p{color:var(--muted);line-height:1.8}
+    .muted{color:#94a3b8}
+    .pill{display:inline-block;padding:6px 10px;background:#0f172a;border:1px solid #1f2937;border-radius:999px;margin:2px;color:#cbd5e1;font-size:12px}
+    .btn{cursor:pointer;border:none;border-radius:10px;padding:10px 14px;background:linear-gradient(90deg,#16a34a,#22c55e);color:#031b0d;font-weight:700}
+    .btn.secondary{background:#0f172a;color:#e5e7eb;border:1px solid #1f2937}
+    .btn.warn{background:#0f172a;color:#fbbf24;border:1px solid #f59e0b}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .list{display:grid;gap:10px}
+    .q{padding:12px;border:1px solid #1f2937;border-radius:10px;background:#0b1529}
+    .q h4{margin:0 0 8px 0}
+    .options{display:grid;gap:8px}
+    .opt{display:flex;gap:8px;align-items:flex-start;padding:10px;border-radius:10px;border:1px solid #1e293b;background:#0b1221;cursor:pointer}
+    .opt input{margin-top:4px}
+    .correct{border-color:#22c55e;background:#0c1e16}
+    .wrong{border-color:#ef4444;background:#1a1012}
+    .explain{font-size:14px;color:#cbd5e1;margin-top:6px}
+    footer{margin:40px 0 60px;color:#94a3b8}
+    .tag{display:inline-block;background:#0f172a;border:1px dashed #334155;color:#9ca3af;border-radius:8px;padding:4px 8px;font-size:12px}
+    .small{font-size:12px;color:#93a0b4}
+    .hr{height:1px;background:#1f2937;margin:14px 0}
+    .input{background:#0f172a;color:#e5e7eb;border:1px solid #1f2937;border-radius:8px;padding:10px;width:100%}
+    .select{background:#0f172a;color:#e5e7eb;border:1px solid #1f2937;border-radius:8px;padding:10px;width:100%}
+    .scorebox{display:flex;gap:10px;flex-wrap:wrap}
+    .scorebox .pill{background:#0f172a}
+    details{border:1px solid #1f2937;border-radius:8px;padding:8px;background:#0b1221}
+    summary{cursor:pointer}
+    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;background:#0f172a;border:1px solid #1f2937;border-radius:6px;padding:2px 6px;color:#93c5fd}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap title">
+      <h1 style="margin:0;font-size:22px">📘 صفحة فاعلية: <span style="color:#86efac">ملخص + اختبار</span></h1>
+      <span class="badge">يعمل بالكامل دون إنترنت</span>
+      <span class="badge">RTL • عربي</span>
+    </div>
+  </header>
+
+  <main class="wrap grid">
+    <section class="card">
+      <h2>الفكرة</h2>
+      <p>صفحة واحدة تجمع ملخصًا سريعًا لكل فصل، ثم اختبارًا تفاعليًا بأسئلة «صح/خطأ» و«اختيارات متعددة». الأسئلة تُسحب عشوائيًا وتتفادى التكرار عبر <span class="kbd">localStorage</span>. يمكنك الطباعة أو التحويل إلى PDF، أو رفع الملف كما هو إلى أي خدمة استضافة (GitHub Pages / Netlify) ليعمل كرابط.</p>
+      <div class="row">
+        <button class="btn" id="startQuiz">ابدأ الاختبار</button>
+        <button class="btn secondary" id="printBtn">طباعة / PDF</button>
+        <button class="btn warn" id="resetBtn" title="حذف السجل المحلي لتكرار الأسئلة">إعادة ضبط الأسئلة</button>
+      </div>
+      <div class="hr"></div>
+      <div class="row">
+        <label style="min-width:120px">اختر الفصل:</label>
+        <select class="select" id="chapterSelect"></select>
+        <label style="min-width:120px">عدد الأسئلة:</label>
+        <input class="input" id="numQuestions" type="number" min="1" value="6" style="max-width:120px" />
+      </div>
+      <p class="small">تلميح: يمكنك فتح <span class="kbd">تفاصيل المراجع</span> أسفل كل ملخص للاطلاع على المصادر.</p>
+    </section>
+
+    <aside class="card">
+      <h2>ملخصات الفصول</h2>
+      <div id="summaries" class="list"></div>
+    </aside>
+
+    <section class="card" style="grid-column:1/-1">
+      <h2>الاختبار</h2>
+      <div id="quizBox" class="list"></div>
+      <div id="resultBox" class="card" style="display:none"></div>
+    </section>
+
+    <section class="card" style="grid-column:1/-1">
+      <h2>طريقة النشر كرابط</h2>
+      <ol class="muted">
+        <li>افتح <span class="kbd">github.com</span> &rarr; أنشئ مستودعًا جديدًا &rarr; ارفع هذا الملف كما هو.</li>
+        <li>من إعدادات المستودع فعّل <b>GitHub Pages</b> على فرع <b>main</b> وابدأ النشر. ستحصل على رابط مباشر.</li>
+        <li>بديل سريع: اسحب الملف إلى <b>netlify.app</b> (Drag &amp; Drop) لتحصل على رابط خلال ثوانٍ.</li>
+      </ol>
+      <p class="small">كل المحتوى ذاتي الاكتفاء (HTML/CSS/JS) ولا يعتمد على مكتبات خارجية.</p>
+    </section>
+
+    <footer class="wrap">
+      <p>© صفحة تعليمية تفاعلية. تم إعداد المحتوى التعليمي اعتمادًا على الفهرس والأقسام الافتتاحية من <i>Landmines and Unexploded Ordnance: A Resource Book (2000)</i> لـ Rae McGrath.</p>
+    </footer>
+  </main>
+
+  <script>
+    // ————— بيانات الفصل والسؤال —————
+    const DATA = {
+      chapters: [
+        {
+          id: "ch1",
+          title: "1) مقدمة إلى الألغام والذخائر غير المنفجرة",
+          summary: "يعرض تطوّر الألغام من الحرب العالمية الأولى إلى الحروب الحديثة، ويفصّل خصائص الألغام (انفجارية/شظايا/قافزة)، وآليات التفعيل (ضغط/سلك جر/تحرر ضغط/قرب)، وطرق النثر (يدوي/جوي/قذائف). يشرح الفرق بين الألغام والذخائر غير المنفجرة (UXO) والذخائر العنقودية وتأثيرها طويل الأمد على المجتمعات.",
+          references: [
+            "الفهرس: «An Introduction to Landmines and Unexploded Ordnance»، مع أقسام الخصائص وأنماط التفعيل والنثر.",
+          ],
+          questions: [
+            {
+              type: "tf",
+              q: "الألغام القافزة (Bounding) ترفع نفسها إلى ارتفاع معين قبل الانفجار لنشر الشظايا على نطاق أوسع.",
+              answer: true,
+              explain: "الفكرة القافزة تزيد من نصف القتل بالشظايا مقارنة بالانفجار الأرضي.",
+            },
+            {
+              type: "mcq",
+              q: "أي من التالي يُعد آلية تفعيل شائعة في الألغام المضادة للأفراد؟",
+              options: ["مؤقت فقط", "سلك جر (Tripwire)", "إشارة GPS", "حرارة الجسم"],
+              answerIndex: 1,
+              explain: "سلك الجر آلية كلاسيكية إلى جانب الضغط وتحرر الضغط والقرب.",
+            },
+            {
+              type: "tf",
+              q: "الذخائر غير المنفجرة (UXO) هي ذخائر فُعِّلت ذاتيًا بعد انتهاء القتال لذلك لا تشكّل خطرًا.",
+              answer: false,
+              explain: "UXO تبقى خطرة لأنها فشلت في الانفجار عند الاستخدام وتظل قابلة للانفجار لاحقًا.",
+            },
+            {
+              type: "mcq",
+              q: "ينتمي مصطلح «الذخائر العنقودية» إلى:",
+              options: ["نوع من الألغام البحرية", "ذخائر تُنثر حمولات فرعية قد تتصرف كألغام", "درونات استطلاع", "قذائف دخانية"],
+              answerIndex: 1,
+              explain: "بعض الحمولة الفرعية قد تتحول عمليًا إلى ألغام بفعل الفشل في الانفجار.",
+            }
+          ]
+        },
+        {
+          id: "ch2",
+          title: "2) الأثر بعد النزاع",
+          summary: "يتناول الأثر المباشر على جسم الإنسان وأنماط الإصابة، والفئات الأشد هشاشة (الأطفال، الرعاة، العائدون)، وبُعد الثقة المجتمعية والثقافي. كما يناقش الأثر غير المباشر على الخدمات الصحية والنقل والتجارة وعلى مسار التنمية.",
+          references: [
+            "الفهرس: «Post-conflict Impact» بأقسام: الجسم البشري، الهشاشة، الثقة، الثقافة، التأثيرات غير المباشرة (الصحة/النقل/التنمية).",
+          ],
+          questions: [
+            { type: "tf", q: "الأطفال غالبًا ضمن الفئات الأكثر تعرضًا لخطر الألغام بسبب السلوك الاستكشافي واللعب.", answer: true, explain: "اللعب والفضول وقلة الوعي تزيد المخاطر."},
+            { type: "mcq", q: "أي مما يلي يُعد أثرًا غير مباشر للألغام؟", options: ["بتر الأطراف فور الانفجار", "نزيف حاد", "تعطّل سلاسل الإمداد والنقل", "حروق مباشرة"], answerIndex: 2, explain: "تعطيل النقل والتجارة والخدمات من الآثار غير المباشرة."},
+            { type: "tf", q: "فقدان الثقة المجتمعية في الأرض والطرق يقل بعد إزالة علامات التحذير.", answer: false, explain: "العكس؛ غياب التحذير مع استمرار الخطر يفاقم فقدان الثقة."},
+            { type: "mcq", q: "أي مرفق يتأثر طويلًا بالألغام كأثر غير مباشر؟", options:["المتاحف","الحدائق","القطاع الصحي","الملاعب"], answerIndex:2, explain:"ارتفاع الضغط على القطاع الصحي وإعادة التأهيل."}
+          ]
+        },
+        {
+          id: "ch3",
+          title: "3) عملية المسح (Survey)",
+          summary: "يشرح المنطق خلف المسح، ومستويات التقييم: المستوى الأول (تقدير الأثر على المجتمع عبر استبيانات ومقابلات)، والمستوى الثاني (مسح فني/عملياتي أدق). يوضح دور الخرائط والتعليم المجتمعي وتحديد الأولويات وإعداد التقارير.",
+          references: [
+            "الفهرس: «The Survey Process» بما في ذلك Level One/Two، الخرائط، التعليم المجتمعي، تحديد الأولويات.",
+          ],
+          questions: [
+            { type:"mcq", q:"الهدف الرئيس من مسح المستوى الأول هو:", options:["إزالة الألغام فورًا","تقييم الأثر وتحديد الأولويات","تدريب الكلاب","اختبار معدات كشف جديدة"], answerIndex:1, explain:"Level One لتقدير الأثر وبناء صورة أولية قبل التدخل."},
+            { type:"tf", q:"المستوى الثاني يركز على توثيق فني أدق للمناطق الخطرة وتخطيط العمليات.", answer:true, explain:"Level Two تفصيلي لدعم التخطيط الميداني."},
+            { type:"mcq", q:"أي أداة شائعة في المسح ورسم الخرائط؟", options:["GPS","ميكروسكوب","سونار بحري","راسم تخطيط قلب"], answerIndex:0, explain:"أنظمة تحديد المواقع أساسية للتوثيق."},
+            { type:"tf", q:"تحديد الأولويات يعتمد فقط على سهولة الوصول، دون النظر إلى الأثر على سبل العيش.", answer:false, explain:"الأثر على المجتمع وسبل العيش عامل حاسم في الجدولة."}
+          ]
+        },
+        {
+          id:"ch4a",
+          title:"4.1) إزالة الألغام والذخائر غير المنفجرة (عمليات)",
+          summary:"يعرض أساليب الإزالة: العمل اليدوي والمنقب الإلكتروني والعصا المرجعية، إدارة الميدان والمسافات الآمنة، أدوات الحماية، المجسات، الميكنة، والكلاب. كما يتناول تقليل/اختزال مساحة الحقل، التعليمات الترميزية، وتطهير مناطق القتال (BAC).",
+          references:[
+            "الفهرس: «Physical eradication… Manual, Electronic, Mechanisation, Dogs, Reduction, Marking, BAC, QA, Incidents».",
+          ],
+          questions:[
+            { type:"mcq", q:"أي أسلوب يُستخدم لتسريع العمل في التربة المناسبة مع بقاء ضرورة التحقق البشري؟", options:["الميكنة","أشعة X","طائرات بدون طيار مسلحة","مغناطيس أرضي ضخم"], answerIndex:0, explain:"الميكنة تدعم لكنها لا تُغني عن التحقق/QA."},
+            { type:"tf", q:"إدارة المسافات الآمنة وترسيم الميدان عنصر أساسي في السلامة.", answer:true, explain:"لتقليل المخاطر على الطواقم."},
+            { type:"mcq", q:"BAC تشير إلى:", options:["تطهير منطقة المعركة","اختبار قبول بايز", "شهادة مطابقة", "قناة ذات نطاق عريض"], answerIndex:0, explain:"Battle Area Clearance."},
+            { type:"tf", q:"الكلاب يمكن أن تُستخدم للكشف، لكنها تحتاج بروتوكولات جودة صارمة.", answer:true, explain:"تُحسّن الإنتاجية ضمن منظومة QA."}
+          ]
+        },
+        {
+          id:"ch4b",
+          title:"4.2) الهياكل المستدامة لبرامج نزع الألغام الوطنية",
+          summary:"يناقش النماذج الإدارية وصنع القرار، والحَوْكمة والرقابة والشفافية، وسُبل الاستدامة: تنظيمية وهيكلية وبشرية وتقنية.",
+          references:[
+            "الفهرس: «Sustainable Management Structures… Decision-making, Oversight, Sustainability (org/structural/manpower/technology)».",
+          ],
+          questions:[
+            { type:"tf", q:"الاستدامة التقنية تعني اختيار تقنيات يمكن تشغيلها وصيانتها محليًا على المدى الطويل.", answer:true, explain:"تجنّب حلول لا يمكن دعمها محليًا."},
+            { type:"mcq", q:"أي عنصر ليس من عناصر الاستدامة المذكورة عادةً؟", options:["تنظيمية","هيكلية","موسمية","بشرية"], answerIndex:2, explain:"المذكور عادة: تنظيمية/هيكلية/بشرية/تقنية."},
+            { type:"tf", q:"الرقابة الوطنية والشفافية تساعدان في رفع الثقة والتمويل.", answer:true, explain:"تحسن القبول العام والدعم الدولي."},
+            { type:"mcq", q:"قرار جدولة الأولويات يجب أن يستند إلى:", options:["اعتبارات سياسية فقط","اعتبارات أمنية فقط","مصفوفة أثر/مخاطر/جاهزية تنفيذ","القرب من العاصمة"], answerIndex:2, explain:"نهج متوازن قائم على بيانات."}
+          ]
+        },
+        {
+          id:"ch5",
+          title:"5) الاستجابة لاحتياجات المجتمعات المتأثرة",
+          summary:"يركز على رعاية الضحايا، وتصميم التوعية بالمخاطر المتكيفة مع السياق (عدم تعميم رسائل عالمية على مشكلات محلية)، فرق العمل المجتمعية، دعم النازحين والرحل، والإسعافات الأولية وإعادة الإدماج الاقتصادي/الاجتماعي.",
+          references:[
+            "الفهرس: «Mine victims, Mine awareness pitfalls, Proven approaches, IDPs/Nomads, First-aid model, Livelihoods».",
+          ],
+          questions:[
+            { type:"tf", q:"التوعية بالمخاطر الفعالة يجب أن تُصمَّم محليًا وفق سلوكيات ومخاطر المجتمع.", answer:true, explain:"إلا تحولت إلى رسائل غير فعّالة."},
+            { type:"mcq", q:"من أمثلة المقاربات المثبتة:", options:["نسخ منشورات عامة عالمية","فرق عمل محلية تشاركية","الاكتفاء باللافتات","حملات إلكترونية فقط"], answerIndex:1, explain:"النهج التشاركي يزيد الفاعلية."},
+            { type:"mcq", q:"أي عنصر جوهري في استجابة الضحايا؟", options:["اللوم الاجتماعي","التأهيل الطبي والأطراف الصناعية والدعم النفسي والاقتصادي","التجاهل","إعادة التوطين القسري دائمًا"], answerIndex:1, explain:"استجابة متعددة الأبعاد."},
+            { type:"tf", q:"برامج إسعافات أولية قصيرة يمكنها خفض الوفيات إذا صُممت واقعيًا وتمت مراجعتها دوريًا.", answer:true, explain:"المراجعة بعد أشهر تحسّن البروتوكولات."}
+          ]
+        }
+      ]
+    };
+
+    // ————— واجهة الملخصات —————
+    const summariesEl = document.getElementById('summaries');
+    const chapterSelect = document.getElementById('chapterSelect');
+    const numQuestions = document.getElementById('numQuestions');
+    const quizBox = document.getElementById('quizBox');
+    const resultBox = document.getElementById('resultBox');
+
+    // تعبئة القوائم
+    DATA.chapters.forEach(ch => {
+      // خيار في القائمة
+      const opt = document.createElement('option');
+      opt.value = ch.id;
+      opt.textContent = ch.title;
+      chapterSelect.appendChild(opt);
+      // بطاقة ملخص
+      const details = document.createElement('details');
+      const summary = document.createElement('summary');
+      summary.innerHTML = `<b>${ch.title}</b>`;
+      const p = document.createElement('p');
+      p.textContent = ch.summary;
+      const refs = document.createElement('div');
+      refs.className = 'small';
+      refs.innerHTML = '<div class="hr"></div><b>مراجع:</b><ul>'+ch.references.map(r=>`<li>${r}</li>`).join('')+'</ul>';
+      details.appendChild(summary);
+      details.appendChild(p);
+      details.appendChild(refs);
+      summariesEl.appendChild(details);
+    });
+
+    // ————— منطق الاختبار —————
+    function shuffle(arr){return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(v=>v[1])}
+    function pickWithoutRepeats(all, count, chapterId){
+      const key = 'asked_'+chapterId;
+      const asked = JSON.parse(localStorage.getItem(key) || '[]');
+      const pool = all.filter((_,i)=>!asked.includes(i));
+      let chosen = [];
+      if(pool.length >= count){
+        const idxs = shuffle([...pool.keys()]).slice(0, count).map(k=>all.indexOf(pool[k]));
+        chosen = idxs;
+      }else{
+        // خذ ما تبقى ثم أعد الضبط لباقي الأسئلة
+        const remainingIdxs = pool.map(item => all.indexOf(item));
+        const stillNeed = count - remainingIdxs.length;
+        const allIdxs = [...Array(all.length).keys()];
+        const refill = shuffle(allIdxs).filter(i=>!remainingIdxs.includes(i)).slice(0, stillNeed);
+        chosen = remainingIdxs.concat(refill);
+        localStorage.setItem(key, JSON.stringify([]));
+      }
+      // سجّل المختار
+      const newAsked = JSON.parse(localStorage.getItem(key) || '[]').concat(chosen);
+      localStorage.setItem(key, JSON.stringify([...new Set(newAsked)]));
+      return chosen.map(i=>({idx:i, data:all[i]}));
+    }
+
+    function renderQuiz(chapterId, count){
+      quizBox.innerHTML='';
+      resultBox.style.display='none';
+      const ch = DATA.chapters.find(c=>c.id===chapterId) || DATA.chapters[0];
+      const picked = pickWithoutRepeats(ch.questions, count, ch.id);
+
+      let score = 0;
+      let answered = 0;
+      const answersReview = [];
+
+      picked.forEach((entry, qi)=>{
+        const qwrap = document.createElement('div');
+        qwrap.className = 'q';
+        const qh = document.createElement('h4');
+        qh.textContent = `س${qi+1}: ${entry.data.q}`;
+        const ops = document.createElement('div');
+        ops.className = 'options';
+
+        if(entry.data.type==='tf'){
+          ['صح','خطأ'].forEach((label, oi)=>{
+            const opt = document.createElement('label'); opt.className='opt';
+            const input = document.createElement('input'); input.type='radio'; input.name='q'+qi; input.value = (label==='صح');
+            const span = document.createElement('span'); span.textContent = label;
+            opt.appendChild(input); opt.appendChild(span);
+            ops.appendChild(opt);
+          });
+        } else {
+          const shuffled = shuffle(entry.data.options.map((t,i)=>({t,i})));
+          shuffled.forEach(({t,i})=>{
+            const opt = document.createElement('label'); opt.className='opt';
+            const input = document.createElement('input'); input.type='radio'; input.name='q'+qi; input.value=i;
+            const span = document.createElement('span'); span.textContent = t;
+            opt.appendChild(input); opt.appendChild(span);
+            ops.appendChild(opt);
+          });
+        }
+
+        const explain = document.createElement('div'); explain.className='explain'; explain.style.display='none';
+        const submit = document.createElement('button'); submit.className='btn secondary'; submit.textContent='تحقق من الإجابة';
+
+        submit.addEventListener('click', ()=>{
+          const selected = qwrap.querySelector('input[type="radio"]:checked');
+          if(!selected){ alert('اختر إجابة أولًا'); return; }
+          // قارن
+          let correct = false;
+          if(entry.data.type==='tf'){
+            correct = (String(entry.data.answer) === String(selected.value==='true'));
+          }else{
+            correct = (Number(selected.value) === Number(entry.data.answerIndex));
+          }
+          // تلوين الخيارات
+          qwrap.querySelectorAll('label.opt').forEach(lab=>lab.classList.remove('correct','wrong'));
+          if(correct){
+            selected.parentElement.classList.add('correct');
+            score++;
+          }else{
+            selected.parentElement.classList.add('wrong');
+            // لو MCQ، علّم الصحيحة
+            if(entry.data.type==='mcq'){
+              const correctInput = Array.from(qwrap.querySelectorAll('input')).find(inp=>Number(inp.value)===Number(entry.data.answerIndex));
+              if(correctInput) correctInput.parentElement.classList.add('correct');
+            }
+          }
+          explain.style.display='block';
+          explain.textContent = 'الشرح: ' + (entry.data.explain || '—');
+          submit.disabled = true;
+          answered++;
+          answersReview.push({q: entry.data.q, correct, explain: entry.data.explain || '', type: entry.data.type});
+          if(answered === picked.length){
+            showResult();
+          }
+        });
+
+        qwrap.appendChild(qh);
+        qwrap.appendChild(ops);
+        qwrap.appendChild(explain);
+        qwrap.appendChild(document.createElement('div')).className='hr';
+        qwrap.appendChild(submit);
+        quizBox.appendChild(qwrap);
+      });
+
+      function showResult(){
+        resultBox.style.display='block';
+        const pct = Math.round((score / picked.length)*100);
+        resultBox.innerHTML = `
+          <h3>النتيجة</h3>
+          <div class="scorebox">
+            <span class="pill">الصحيح: ${score}</span>
+            <span class="pill">الإجمالي: ${picked.length}</span>
+            <span class="pill">النسبة: ${pct}%</span>
+          </div>
+          <div class="hr"></div>
+          <details open><summary>مراجعة الإجابات</summary>
+            <ol>
+              ${answersReview.map(r=>`<li>${r.q}<br><span class="small">${r.correct? '✅ صحيح' : '❌ خطأ'}</span><br><span class="small">${r.explain}</span></li>`).join('')}
+            </ol>
+          </details>
+        `;
+      }
+    }
+
+    document.getElementById('startQuiz').addEventListener('click', ()=>{
+      const chapterId = chapterSelect.value || DATA.chapters[0].id;
+      const count = Math.max(1, Math.min(parseInt(numQuestions.value||'6',10), 20));
+      renderQuiz(chapterId, count);
+      window.scrollTo({top: document.body.scrollHeight, behavior:'smooth'});
+    });
+
+    document.getElementById('resetBtn').addEventListener('click', ()=>{
+      if(confirm('سيتم مسح سجل الأسئلة لتكرارها من جديد. متابعة؟')){
+        DATA.chapters.forEach(ch=>localStorage.removeItem('asked_'+ch.id));
+        alert('تمت إعادة الضبط.');
+      }
+    });
+
+    document.getElementById('printBtn').addEventListener('click', ()=>window.print());
+
+    // تعبئة افتراضية
+    chapterSelect.value = DATA.chapters[0].id;
+  </script>
+</body>
+</html>
