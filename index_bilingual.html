@@ -1,0 +1,431 @@
+
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Interactive Page: Summaries + Quizzes (AR/EN)</title>
+  <style>
+    :root{--bg:#0f172a;--panel:#111827;--muted:#cbd5e1;--text:#e5e7eb;--accent:#22c55e;--danger:#ef4444;--warn:#f59e0b;--link:#38bdf8}
+    *{box-sizing:border-box}
+    body{margin:0;background:linear-gradient(180deg,#0b1022,#0e142a 35%,#0a1226);color:var(--text);font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,"Noto Sans Arabic","Helvetica Neue",Arial,"Apple Color Emoji","Segoe UI Emoji";}
+    a{color:var(--link);text-decoration:none}
+    a:hover{text-decoration:underline}
+    header{position:sticky;top:0;background:rgba(15,23,42,.82);backdrop-filter:blur(10px);border-bottom:1px solid #1f2937;z-index:50}
+    .wrap{max-width:1100px;margin:0 auto;padding:16px}
+    .title{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+    .badge{background:#1f2937;color:#93c5fd;padding:4px 10px;border-radius:999px;font-size:12px;border:1px solid #334155}
+    .grid{display:grid;gap:16px;grid-template-columns:1fr}
+    @media(min-width:900px){.grid{grid-template-columns:1.2fr .8fr}}
+    .card{background:#0b1221;border:1px solid #1e293b;border-radius:14px;padding:16px}
+    .card h2{margin:0 0 10px 0;font-size:20px}
+    .card p{color:var(--muted);line-height:1.8}
+    .muted{color:#94a3b8}
+    .pill{display:inline-block;padding:6px 10px;background:#0f172a;border:1px solid #1f2937;border-radius:999px;margin:2px;color:#cbd5e1;font-size:12px}
+    .btn{cursor:pointer;border:none;border-radius:10px;padding:10px 14px;background:linear-gradient(90deg,#16a34a,#22c55e);color:#031b0d;font-weight:700}
+    .btn.secondary{background:#0f172a;color:#e5e7eb;border:1px solid #1f2937}
+    .btn.warn{background:#0f172a;color:#fbbf24;border:1px solid #f59e0b}
+    .btn:disabled{opacity:.5;cursor:not-allowed}
+    .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+    .list{display:grid;gap:10px}
+    .q{padding:12px;border:1px solid #1f2937;border-radius:10px;background:#0b1529}
+    .q h4{margin:0 0 8px 0}
+    .options{display:grid;gap:8px}
+    .opt{display:flex;gap:8px;align-items:flex-start;padding:10px;border-radius:10px;border:1px solid #1e293b;background:#0b1221;cursor:pointer}
+    .opt input{margin-top:4px}
+    .correct{border-color:#22c55e;background:#0c1e16}
+    .wrong{border-color:#ef4444;background:#1a1012}
+    .explain{font-size:14px;color:#cbd5e1;margin-top:6px}
+    footer{margin:40px 0 60px;color:#94a3b8}
+    .tag{display:inline-block;background:#0f172a;border:1px dashed #334155;color:#9ca3af;border-radius:8px;padding:4px 8px;font-size:12px}
+    .small{font-size:12px;color:#93a0b4}
+    .hr{height:1px;background:#1f2937;margin:14px 0}
+    .input{background:#0f172a;color:#e5e7eb;border:1px solid #1f2937;border-radius:8px;padding:10px;width:100%}
+    .select{background:#0f172a;color:#e5e7eb;border:1px solid #1f2937;border-radius:8px;padding:10px;width:100%}
+    .scorebox{display:flex;gap:10px;flex-wrap:wrap}
+    .scorebox .pill{background:#0f172a}
+    details{border:1px solid #1f2937;border-radius:8px;padding:8px;background:#0b1221}
+    summary{cursor:pointer}
+    .kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace;background:#0f172a;border:1px solid #1f2937;border-radius:6px;padding:2px 6px;color:#93c5fd}
+    .lang{margin-inline-start:auto}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap title">
+      <h1 style="margin:0;font-size:22px">📘 Interactive Page: <span style="color:#86efac">AR / EN</span></h1>
+      <span class="badge" id="modeBadge">Arabic • RTL</span>
+      <select class="select lang" id="langSwitch" style="max-width:180px">
+        <option value="ar">العربية (AR)</option>
+        <option value="en">English (EN)</option>
+      </select>
+    </div>
+  </header>
+
+  <main class="wrap grid">
+    <section class="card">
+      <h2 id="ideaTitle">الفكرة</h2>
+      <p id="ideaText">صفحة واحدة تجمع ملخصًا سريعًا لكل فصل + اختبار تفاعلي. يدعم العربية والإنجليزية، والأسئلة تُسحب عشوائيًا وتتفادى التكرار عبر <span class="kbd">localStorage</span>. اعرضها كرابط عبر GitHub Pages.</p>
+      <div class="row">
+        <button class="btn" id="startQuiz">ابدأ الاختبار</button>
+        <button class="btn secondary" id="printBtn">طباعة / PDF</button>
+        <button class="btn warn" id="resetBtn" title="حذف السجل المحلي لتكرار الأسئلة">إعادة ضبط الأسئلة</button>
+      </div>
+      <div class="hr"></div>
+      <div class="row">
+        <label style="min-width:120px" id="pickChapterLabel">اختر الفصل:</label>
+        <select class="select" id="chapterSelect"></select>
+        <label style="min-width:120px" id="numQLabel">عدد الأسئلة:</label>
+        <input class="input" id="numQuestions" type="number" min="1" value="8" style="max-width:120px" />
+      </div>
+      <p class="small" id="hintText">تلميح: استخدم <span class="kbd">تفاصيل المراجع</span> أسفل كل ملخص.</p>
+    </section>
+
+    <aside class="card">
+      <h2 id="summaryTitle">ملخصات الفصول</h2>
+      <div id="summaries" class="list"></div>
+    </aside>
+
+    <section class="card" style="grid-column:1/-1">
+      <h2 id="quizTitle">الاختبار</h2>
+      <div id="quizBox" class="list"></div>
+      <div id="resultBox" class="card" style="display:none"></div>
+    </section>
+
+    <section class="card" style="grid-column:1/-1">
+      <h2 id="publishTitle">طريقة النشر كرابط</h2>
+      <ol class="muted" id="publishList">
+        <li>GitHub Pages: ارفع <span class="kbd">index.html</span> ثم فعّل Pages من Settings &rarr; Pages.</li>
+        <li>Netlify: اسحب الملف لإطلاق رابط فوري.</li>
+      </ol>
+      <p class="small" id="footNote">كل المحتوى ذاتي الاكتفاء (HTML/CSS/JS) ولا يعتمد على مكتبات خارجية.</p>
+    </section>
+
+    <footer class="wrap">
+      <p id="creditLine">© صفحة تعليمية تفاعلية. محتوى الفصول مبني على فهرس وفقرات من: Rae McGrath (2000).</p>
+    </footer>
+  </main>
+
+  <script>
+    // ————— المحتوى باللغتين —————
+    const DATA_AR = {
+      ui: {
+        ideaTitle: "الفكرة",
+        ideaText: "صفحة واحدة تجمع ملخصًا سريعًا لكل فصل + اختبار تفاعلي. يدعم العربية والإنجليزية، والأسئلة تُسحب عشوائيًا وتتفادى التكرار عبر localStorage. اعرضها كرابط عبر GitHub Pages.",
+        pickChapter: "اختر الفصل:",
+        numQuestions: "عدد الأسئلة:",
+        hint: "تلميح: استخدم تفاصيل المراجع أسفل كل ملخص.",
+        summaryTitle: "ملخصات الفصول",
+        quizTitle: "الاختبار",
+        publishTitle: "طريقة النشر كرابط",
+        publishList: [
+          "GitHub Pages: ارفع index.html ثم فعّل Pages من Settings → Pages.",
+          "Netlify: اسحب الملف لإطلاق رابط فوري."
+        ],
+        footNote: "كل المحتوى ذاتي الاكتفاء (HTML/CSS/JS) ولا يعتمد على مكتبات خارجية.",
+        start: "ابدأ الاختبار",
+        print: "طباعة / PDF",
+        reset: "إعادة ضبط الأسئلة",
+        result: "النتيجة",
+        review: "مراجعة الإجابات",
+        trueTxt: "صح",
+        falseTxt: "خطأ",
+        check: "تحقق من الإجابة",
+        explain: "الشرح: "
+      },
+      chapters: [
+        {
+          id:"ch1",
+          title:"1) مقدمة إلى الألغام والذخائر غير المنفجرة",
+          summary:"تطوّر الألغام وآليات التفعيل والتمييز بين الألغام وUXO والذخائر العنقودية.",
+          references:["الفهرس: المقدمة، آليات التفعيل، النثر الجوي/المدفعي."],
+          deep: "تفصيلاً: خصائص الانفجار مقابل الشظايا، القافزة، فروق المصهرات (ضغط، تحرير ضغط، شدّ سلك، قرب)، وعيوب النثر (معدلات فشل، أخطار ما بعد النزاع).",
+          questions:[
+            {type:"tf", q:"Bounding mines ترفع نفسها لنشر الشظايا.", answer:true, explain:"زيادة نصف القتل وارتفاع الشظايا."},
+            {type:"mcq", q:"Tripwire يعني:", options:["مصهر ضغط","سلك جر","تأخير زمني","قرب حراري"], answerIndex:1, explain:"مصهر يُسحب بسلك."},
+            {type:"tf", q:"UXO غير خطرة لأنها فشلت في الانفجار.", answer:false, explain:"تبقى قابلة للانفجار."},
+            {type:"mcq", q:"الذخائر العنقودية:", options:["ألغام بحرية","حمولات فرعية قد تتصرف كألغام","درونات","قذائف دخان"], answerIndex:1, explain:"تفشل بعض الحمولات فتتحول إلى مخاطر دائمة."},
+            {type:"tf", q:"الألغام البلاستيكية دائمًا لا تُكتشف.", answer:false, explain:"غالبًا تحوي معدنًا أدنى أو يمكن تتبعها بوسائل أخرى."}
+          ]
+        },
+        {
+          id:"ch2",
+          title:"2) الأثر بعد النزاع",
+          summary:"الإصابات المباشرة، الفئات الهشة، أثر غير مباشر على النقل والصحة والتنمية.",
+          references:["الفهرس: Direct/Indirect impact، Vulnerability، Community confidence."],
+          deep:"تفصيلاً: أنماط الإصابة (بتر انفجاري/شظايا)، التأثير النفسي، وتقدير تكلفة الفرصة الضائعة للمناطق المقفلة.",
+          questions:[
+            {type:"tf", q:"الأطفال ضمن الأكثر هشاشة.", answer:true, explain:"سلوك استكشافي وقلة وعي."},
+            {type:"mcq", q:"أثر غير مباشر:", options:["بتر فوري","نزف","تعطل سلاسل الإمداد","حروق"], answerIndex:2, explain:"تعطل النقل والتجارة."},
+            {type:"tf", q:"زوال اللافتات يقلل الخطر تلقائيًا.", answer:false, explain:"قد يزيد المخاطرة لانعدام التحذير."},
+            {type:"mcq", q:"مرفق يتأثر طويلًا:", options:["الحدائق","المتاحف","القطاع الصحي","الملاعب"], answerIndex:2, explain:"ضغط على الصحة وإعادة التأهيل."},
+            {type:"tf", q:"العائدون (IDPs/Refugees) يتعرضون لمخاطر أعلى.", answer:true, explain:"عودة إلى أراضٍ ملوثة دون معلومات كافية."}
+          ]
+        }
+      ]
+    };
+
+    const DATA_EN = {
+      ui: {
+        ideaTitle: "Concept",
+        ideaText: "One-page app with chapter summaries and a randomized quiz. Fully bilingual (AR/EN). Questions avoid repetition using localStorage. Publish via GitHub Pages.",
+        pickChapter: "Pick chapter:",
+        numQuestions: "Questions count:",
+        hint: "Tip: expand references under each summary.",
+        summaryTitle: "Chapter Summaries",
+        quizTitle: "Quiz",
+        publishTitle: "Publish as a Link",
+        publishList: [
+          "GitHub Pages: upload index.html and enable Pages in Settings → Pages.",
+          "Netlify: drag-and-drop to get an instant URL."
+        ],
+        footNote: "Pure HTML/CSS/JS. No external libs.",
+        start: "Start Quiz",
+        print: "Print / PDF",
+        reset: "Reset Questions",
+        result: "Result",
+        review: "Answer Review",
+        trueTxt: "True",
+        falseTxt: "False",
+        check: "Check Answer",
+        explain: "Explain: "
+      },
+      chapters: [
+        {
+          id:"en1",
+          title:"1) Intro to Landmines & UXO",
+          summary:"Evolution of mines; operating modes (blast/frag/bounding); fuzes (pressure, tripwire, pressure-release, proximity); deployment (hand, air, artillery); distinction between mines, UXO, and cluster submunitions.",
+          references:["ToC: ‘An Introduction…’, ‘Mode of operation’, ‘Type of activation mechanism’, ‘Deployment method’, ‘Submunitions’."],
+          deep:"Deeper note: why scatterable systems generate long-term risk (arming envelopes, failure modes, self-destruct reliability) and how ‘area denial’ doctrine shaped design.",
+          questions:[
+            {type:"tf", q:"A bounding AP mine detonates after jumping to ~1–2 m to spread fragments.", answer:true, explain:"It increases lethal radius compared to ground burst."},
+            {type:"mcq", q:"Which is a common AP activation?", options:["GPS signal","Body heat","Tripwire","RFID"], answerIndex:2, explain:"Tripwire, pressure, pressure-release, proximity are standard."},
+            {type:"tf", q:"UXO are safe because they failed to explode.", answer:false, explain:"They remain hazardous and can detonate when disturbed."},
+            {type:"mcq", q:"Cluster munitions are:", options:["Naval mines","Submunitions that may behave like mines when duds","Recon drones","Smoke shells"], answerIndex:1, explain:"Duds become de facto mines."},
+            {type:"tf", q:"Minimum-metal mines are always undetectable.", answer:false, explain:"Many still have enough metal or can be detected by other methods."}
+          ]
+        },
+        {
+          id:"en2",
+          title:"2) Post‑Conflict Impact",
+          summary:"Direct trauma patterns; vulnerable groups; community confidence; indirect impacts on health systems, transport, trade, and development paths.",
+          references:["ToC: ‘Post‑conflict Impact’, ‘The human body’, ‘Vulnerability’, ‘Community confidence’, ‘Indirect impact’ sections."],
+          deep:"Deeper note: economic opportunity cost of blocked land, psychosocial effects, and comparative burden on emergency vs. rehabilitation care.",
+          questions:[
+            {type:"tf", q:"Children are among the most at‑risk groups.", answer:true, explain:"Curiosity/play and low risk awareness."},
+            {type:"mcq", q:"An indirect impact is:", options:["Immediate amputation","Acute bleeding","Disrupted logistics/transport","Burns"], answerIndex:2, explain:"Transport and trade disruption are indirect effects."},
+            {type:"tf", q:"Removing warning signs while hazards remain restores confidence.", answer:false, explain:"It often worsens risk perception and real danger."},
+            {type:"mcq", q:"Which sector faces long‑term strain?", options:["Museums","Parks","Health sector","Stadiums"], answerIndex:2, explain:"Rehabilitation and prosthetics raise long-term demand."},
+            {type:"tf", q:"Returnees/IDPs typically face elevated exposure.", answer:true, explain:"They traverse contaminated routes and unfamiliar hazards."}
+          ]
+        }
+      ]
+    };
+
+    // ————— عناصر DOM —————
+    const langSwitch = document.getElementById('langSwitch');
+    const modeBadge = document.getElementById('modeBadge');
+    const chapterSelect = document.getElementById('chapterSelect');
+    const numQuestions = document.getElementById('numQuestions');
+    const summariesEl = document.getElementById('summaries');
+    const quizBox = document.getElementById('quizBox');
+    const resultBox = document.getElementById('resultBox');
+    const startQuizBtn = document.getElementById('startQuiz');
+    const printBtn = document.getElementById('printBtn');
+    const resetBtn = document.getElementById('resetBtn');
+
+    // UI labels
+    const ideaTitle = document.getElementById('ideaTitle');
+    const ideaText = document.getElementById('ideaText');
+    const pickChapterLabel = document.getElementById('pickChapterLabel');
+    const numQLabel = document.getElementById('numQLabel');
+    const hintText = document.getElementById('hintText');
+    const summaryTitle = document.getElementById('summaryTitle');
+    const quizTitle = document.getElementById('quizTitle');
+    const publishTitle = document.getElementById('publishTitle');
+    const publishList = document.getElementById('publishList');
+    const footNote = document.getElementById('footNote');
+    const creditLine = document.getElementById('creditLine');
+
+    // ————— منطق اللغة —————
+    let LANG = 'ar';
+    function setLang(lang){
+      LANG = lang;
+      const D = (lang==='ar') ? DATA_AR : DATA_EN;
+      // dir / rtl-ltr
+      document.documentElement.lang = (lang==='ar'?'ar':'en');
+      document.documentElement.dir = (lang==='ar'?'rtl':'ltr');
+      modeBadge.textContent = (lang==='ar' ? 'Arabic • RTL' : 'English • LTR');
+      // labels
+      ideaTitle.textContent = D.ui.ideaTitle;
+      ideaText.textContent = D.ui.ideaText;
+      pickChapterLabel.textContent = D.ui.pickChapter;
+      numQLabel.textContent = D.ui.numQuestions;
+      hintText.textContent = D.ui.hint;
+      summaryTitle.textContent = D.ui.summaryTitle;
+      quizTitle.textContent = D.ui.quizTitle;
+      publishTitle.textContent = D.ui.publishTitle;
+      publishList.innerHTML = D.ui.publishList.map(x=>`<li>${x}</li>`).join('');
+      footNote.textContent = D.ui.footNote;
+      creditLine.textContent = (lang==='ar'
+        ? "© صفحة تعليمية تفاعلية. محتوى الفصول مبني على فهرس وفقرات من: Rae McGrath (2000)."
+        : "© Interactive educational page. Content derives from the ToC and sections of Rae McGrath (2000).");
+
+      // buttons
+      startQuizBtn.textContent = D.ui.start;
+      printBtn.textContent = D.ui.print;
+      resetBtn.textContent = D.ui.reset;
+
+      // load chapters
+      fillChapters();
+    }
+
+    langSwitch.addEventListener('change', e=> setLang(e.target.value));
+
+    // ————— تعبئة الملخصات + القائمة —————
+    function fillChapters(){
+      const D = (LANG==='ar') ? DATA_AR : DATA_EN;
+      chapterSelect.innerHTML='';
+      summariesEl.innerHTML='';
+      D.chapters.forEach(ch=>{
+        const opt = document.createElement('option');
+        opt.value = ch.id;
+        opt.textContent = ch.title;
+        chapterSelect.appendChild(opt);
+
+        const details = document.createElement('details');
+        const summary = document.createElement('summary');
+        summary.innerHTML = `<b>${ch.title}</b>`;
+        const p = document.createElement('p'); p.textContent = ch.summary;
+        const deep = document.createElement('p'); deep.className='small'; deep.textContent = (ch.deep || '');
+        const refs = document.createElement('div');
+        refs.className='small';
+        refs.innerHTML = '<div class="hr"></div><b>References:</b><ul>'+ (ch.references||[]).map(r=>`<li>${r}</li>`).join('') +'</ul>';
+        details.appendChild(summary);details.appendChild(p); if(ch.deep) details.appendChild(deep); details.appendChild(refs);
+        summariesEl.appendChild(details);
+      });
+      if(D.chapters[0]) chapterSelect.value = D.chapters[0].id;
+    }
+
+    // ————— أدوات مساعدة —————
+    function shuffle(arr){return arr.map(v=>[Math.random(),v]).sort((a,b)=>a[0]-b[0]).map(v=>v[1])}
+    function pickWithoutRepeats(all, count, cacheKey){
+      const key = 'asked_'+LANG+'_'+cacheKey;
+      const asked = JSON.parse(localStorage.getItem(key) || '[]');
+      const idxs = Array.from({length: all.length}, (_,i)=>i).filter(i=>!asked.includes(i));
+      let chosen = [];
+      if (idxs.length >= count){
+        chosen = shuffle(idxs).slice(0,count);
+      } else {
+        chosen = idxs.concat(shuffle(Array.from({length: all.length}, (_,i)=>i)).slice(0, count-idxs.length));
+        localStorage.setItem(key, JSON.stringify([]));
+      }
+      const newAsked = JSON.parse(localStorage.getItem(key) || '[]').concat(chosen);
+      localStorage.setItem(key, JSON.stringify([...new Set(newAsked)]));
+      return chosen.map(i=>({idx:i, data:all[i]}));
+    }
+
+    function renderQuiz(chapterId, count){
+      const D = (LANG==='ar') ? DATA_AR : DATA_EN;
+      const ch = D.chapters.find(c=>c.id===chapterId) || D.chapters[0];
+      quizBox.innerHTML=''; resultBox.style.display='none';
+
+      const picked = pickWithoutRepeats(ch.questions, count, ch.id);
+      let score=0, answered=0;
+      const review=[];
+
+      picked.forEach((entry, qi)=>{
+        const qwrap = document.createElement('div'); qwrap.className='q';
+        const qh = document.createElement('h4'); qh.textContent = `${LANG==='ar'?'س':''}${qi+1}: ${entry.data.q}`;
+        const ops = document.createElement('div'); ops.className='options';
+
+        if(entry.data.type==='tf'){
+          const labels = [ (LANG==='ar'?DATA_AR.ui.trueTxt:DATA_EN.ui.trueTxt), (LANG==='ar'?DATA_AR.ui.falseTxt:DATA_EN.ui.falseTxt) ];
+          [true,false].forEach((val, oi)=>{
+            const opt = document.createElement('label'); opt.className='opt';
+            const input = document.createElement('input'); input.type='radio'; input.name='q'+qi; input.value=String(val);
+            const span = document.createElement('span'); span.textContent = labels[oi];
+            opt.appendChild(input); opt.appendChild(span); ops.appendChild(opt);
+          });
+        }else{
+          shuffle(entry.data.options.map((t,i)=>({t,i}))).forEach(({t,i})=>{
+            const opt = document.createElement('label'); opt.className='opt';
+            const input = document.createElement('input'); input.type='radio'; input.name='q'+qi; input.value=i;
+            const span = document.createElement('span'); span.textContent = t;
+            opt.appendChild(input); opt.appendChild(span); ops.appendChild(opt);
+          });
+        }
+
+        const explain = document.createElement('div'); explain.className='explain'; explain.style.display='none';
+
+        const submit = document.createElement('button'); submit.className='btn secondary';
+        submit.textContent = (LANG==='ar'?DATA_AR.ui.check:DATA_EN.ui.check);
+
+        submit.addEventListener('click', ()=>{
+          const selected = qwrap.querySelector('input[type="radio"]:checked');
+          if(!selected){ alert(LANG==='ar'?'اختر إجابة أولًا':'Pick an option first'); return; }
+          let correct=false;
+          if(entry.data.type==='tf'){
+            correct = (String(entry.data.answer) === selected.value);
+          }else{
+            correct = (Number(selected.value) === Number(entry.data.answerIndex));
+          }
+          qwrap.querySelectorAll('label.opt').forEach(l=>l.classList.remove('correct','wrong'));
+          if(correct){ selected.parentElement.classList.add('correct'); score++; } 
+          else { selected.parentElement.classList.add('wrong'); if(entry.data.type==='mcq'){ const right = Array.from(qwrap.querySelectorAll('input')).find(inp=>Number(inp.value)===Number(entry.data.answerIndex)); if(right) right.parentElement.classList.add('correct'); } }
+          explain.style.display='block';
+          explain.textContent = (LANG==='ar'?DATA_AR.ui.explain:DATA_EN.ui.explain) + (entry.data.explain||'');
+          submit.disabled=true; answered++; review.push({q:entry.data.q, correct, explain:entry.data.explain||''});
+          if(answered===picked.length) showResult();
+        });
+
+        qwrap.appendChild(qh); qwrap.appendChild(ops); qwrap.appendChild(explain);
+        qwrap.appendChild(document.createElement('div')).className='hr';
+        qwrap.appendChild(submit);
+        quizBox.appendChild(qwrap);
+      });
+
+      function showResult(){
+        resultBox.style.display='block';
+        const pct = Math.round((score/picked.length)*100);
+        resultBox.innerHTML = `
+          <h3>${LANG==='ar'?DATA_AR.ui.result:DATA_EN.ui.result}</h3>
+          <div class="scorebox">
+            <span class="pill">${LANG==='ar'?'الصحيح':'Correct'}: ${score}</span>
+            <span class="pill">${LANG==='ar'?'الإجمالي':'Total'}: ${picked.length}</span>
+            <span class="pill">${LANG==='ar'?'النسبة':'Percent'}: ${pct}%</span>
+          </div>
+          <div class="hr"></div>
+          <details open><summary>${LANG==='ar'?DATA_AR.ui.review:DATA_EN.ui.review}</summary>
+            <ol>
+              ${review.map(r=>`<li>${r.q}<br><span class="small">${r.correct ? '✅' + (LANG==='ar'?' صحيح':' Correct') : '❌' + (LANG==='ar'?' خطأ':' Wrong')}</span><br><span class="small">${r.explain}</span></li>`).join('')}
+            </ol>
+          </details>
+        `;
+      }
+    }
+
+    // ————— أحداث —————
+    startQuizBtn.addEventListener('click', ()=>{
+      const chapterId = chapterSelect.value;
+      const count = Math.max(1, Math.min(parseInt(numQuestions.value||'8',10), 25));
+      renderQuiz(chapterId, count);
+      window.scrollTo({top: document.body.scrollHeight, behavior:'smooth'});
+    });
+    printBtn.addEventListener('click', ()=>window.print());
+    resetBtn.addEventListener('click', ()=>{
+      if(confirm(LANG==='ar'?'مسح سجل الأسئلة؟':'Clear asked-questions history?')){
+        ['ar','en'].forEach(l=>{ 
+          const D = (l==='ar')?DATA_AR:DATA_EN; 
+          D.chapters.forEach(ch=>localStorage.removeItem('asked_'+l+'_'+ch.id));
+        });
+        alert(LANG==='ar'?'تمت إعادة الضبط.':'Reset done.');
+      }
+    });
+
+    // init
+    setLang('ar');
+    langSwitch.value='ar';
+  </script>
+</body>
+</html>
